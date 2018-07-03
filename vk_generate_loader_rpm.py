@@ -90,7 +90,7 @@ def DownloadAndCompileLoader():
         	exit(-1);
 
     if not os.path.exists("Vulkan-Headers"):
-    	if os.system('git clone https://github.com/KhronosGroup/Vulkan-Headers -b sdk-' + sdkVersion):
+    	if os.system('git clone https://github.com/KhronosGroup/Vulkan-Headers.git -b sdk-' + sdkVersion):
             print('Download Vulkan-Headers failed');
             exit(-1);
 
