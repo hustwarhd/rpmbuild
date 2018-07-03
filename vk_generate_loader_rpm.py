@@ -49,7 +49,7 @@ def GetOpt():
     (options, args) = parser.parse_args()
 
     if options.sdkVersion:
-        print("The building branch is %s" % (options.branch));
+        print("The building loader version: %s" % (options.sdkVersion));
         sdkVersion = options.sdkVersion;
     else:
         print("The sdkVersion is not specified, default: " + sdkVersion);
