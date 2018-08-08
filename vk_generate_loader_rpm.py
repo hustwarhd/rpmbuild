@@ -9,10 +9,12 @@ import time
 from optparse import OptionParser
 
 WorkDir = os.getcwd();
-sdkVersion = '1.1.77';
+
+defaultSdkVersion = '1.1.77';
+sdkVersion = defaultSdkVersion;
 
 Spec = "Name:   vulkan-loader \n\
-Version:    " + sdkVersion + "\n\
+Version:    " + defaultSdkVersion + "\n\
 Release:        0  \n\
 Summary:        vulkan-loader \n\
 \n\
@@ -26,10 +28,10 @@ URL:            https://vulkan.lunarg.com/ \n\
 %doc \n\
 /usr/lib64/libvulkan.so \n\
 /usr/lib64/libvulkan.so.1 \n\
-/usr/lib64/libvulkan.so." + sdkVersion + " \n\
+/usr/lib64/libvulkan.so." + defaultSdkVersion + " \n\
 /usr/lib/libvulkan.so \n\
 /usr/lib/libvulkan.so.1 \n\
-/usr/lib/libvulkan.so." + sdkVersion + " \n\
+/usr/lib/libvulkan.so." + defaultSdkVersion + " \n\
 \n\
 \n\
 %changelog \n\
@@ -67,16 +69,17 @@ def DownloadRPMBuild():
     global WorkDir;
 
     os.chdir(WorkDir);
-    if os.path.exists("rpmbuild"):
-        return;
-
-    print("Downloading rpmbuild.....");
-    if os.system('git clone https://github.com/hustwarhd/rpmbuild.git -b master'):
-        print('Download rpmbuild failed');
-        exit(-1);
+    if not os.path.exists("rpmbuild"):
+        print("Downloading rpmbuild.....");
+        if os.system('git clone https://github.com/hustwarhd/rpmbuild.git -b master'):
+            print('Download rpmbuild failed');
+            exit(-1);
+    else:
+        os.system('git checkout master');
+        os.system('git pull');
 
     spec_file = open(WorkDir + "/rpmbuild/SPECS/vulkan-loader.spec",'w');
-    print >> spec_file,Spec
+    print >> spec_file,Spec.replace(defaultSdkVersion, sdkVersion);
     spec_file.close()
 
 def DownloadAndCompileLoader():
@@ -88,13 +91,23 @@ def DownloadAndCompileLoader():
     	if os.system('git clone https://github.com/KhronosGroup/Vulkan-Loader.git -b sdk-' + sdkVersion):
         	print('Download Vulkan-Loader failed');
         	exit(-1);
+    else:
+    	os.chdir(WorkDir + '/Vulkan-Loader');
+    	os.system('git pull')
+    	if os.system('git checkout remotes/origin/sdk-' + sdkVersion + ' -b sdk-' + sdkVersion):
+            os.system('git checkout -b sdk-' + sdkVersion);
 
     if not os.path.exists("Vulkan-Headers"):
-    	if os.system('git clone https://github.com/KhronosGroup/Vulkan-Headers.git -b sdk-' + sdkVersion):
+    	if os.system('git clone https://github.com/KhronosGroup/Vulkan-Headers -b sdk-' + sdkVersion):
             print('Download Vulkan-Headers failed');
             exit(-1);
+    else:
+    	os.chdir(WorkDir + '/Vulkan-Headers');
+    	os.system('git pull')
+    	if os.system('git checkout remotes/origin/sdk-' + sdkVersion + ' -b sdk-' + sdkVersion):
+            os.system('git checkout -b sdk-' + sdkVersion);
 
-    os.chdir('Vulkan-Headers');
+    os.chdir(WorkDir + '/Vulkan-Headers');
     if os.path.exists("build"):
 	os.system('rm build -rf');
 
@@ -108,7 +121,10 @@ def DownloadAndCompileLoader():
         if os.system('git clone https://github.com/google/googletest external/googletest'):
             print('Download googletest failed');
             exit(-1);
-        
+    else:
+    	os.chdir(WorkDir + '/Vulkan-Loader/external/googletest');
+    	os.system('git pull')
+  
     os.chdir(WorkDir + '/Vulkan-Loader');
     if os.path.exists("release64"):
 	os.system('rm release64 -rf');
